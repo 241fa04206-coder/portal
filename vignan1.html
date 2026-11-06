@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vignan Student Attendance Portal</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f3f5fa;color:#20243a}
+button{border:0;cursor:pointer;border-radius:8px;padding:11px 15px;font-weight:600;transition:.25s}
+button:hover{transform:translateY(-2px);filter:brightness(.94)}
+input,select{padding:11px;border:1px solid #d9deea;border-radius:8px;width:100%;outline:none;background:white}
+input:focus,select:focus{border-color:#5548bd;box-shadow:0 0 0 3px #5548bd18}
+.primary{background:#5548bd;color:white}
+.green{background:#159c69;color:white}
+.red{background:#df4e5c;color:white}
+.gray{background:#e9ebf2;color:#34384c}
+.small{padding:7px 10px;font-size:12px}
+.hidden{display:none!important}
+
+/* LOGIN */
+.login-page{
+ min-height:100vh;display:flex;align-items:center;justify-content:center;
+ padding:20px;
+ background:
+ linear-gradient(120deg,rgba(16,24,55,.82),rgba(39,34,104,.65)),
+ url("https://vignan.ac.in/iot_rural_health_care/images/ablock.jpg")
+ center/cover fixed;
+}
+.login-card{
+ width:390px;max-width:100%;background:#ffffffed;padding:35px;
+ border-radius:18px;box-shadow:0 20px 60px #0005;
+ text-align:center;animation:appear .8s ease;
+}
+.logo{width:75px;height:75px;border-radius:50%;background:#5548bd;color:white;
+ display:grid;place-items:center;font-size:24px;font-weight:bold;margin:0 auto 15px}
+.login-card h1{font-size:23px;color:#39318f;margin-bottom:7px}
+.login-card p{color:#73778a;font-size:13px;margin-bottom:20px}
+.login-card input{margin-bottom:12px}
+.login-card button{width:100%;margin-top:8px}
+.login-note{font-size:11px!important;margin-top:15px!important}
+
+/* DASHBOARD */
+#portal{display:none;min-height:100vh}
+.sidebar{
+ position:fixed;left:0;top:0;bottom:0;width:235px;background:#211d55;
+ color:white;padding:25px 15px;z-index:5;
+}
+.brand{padding:8px 10px 25px;border-bottom:1px solid #ffffff25}
+.brand h2{font-size:19px}
+.brand p{font-size:11px;color:#c6c3e9;margin-top:7px}
+.nav{margin-top:25px;display:grid;gap:9px}
+.nav button{background:transparent;color:#dedcf5;text-align:left;padding:13px}
+.nav button.active,.nav button:hover{background:#5548bd;color:white}
+.main{margin-left:235px;min-height:100vh}
+.topbar{
+ background:white;padding:17px 25px;display:flex;justify-content:space-between;
+ align-items:center;gap:15px;box-shadow:0 2px 12px #0000000a;
+}
+.topbar h2{font-size:20px}
+.topbar span{font-size:12px;color:#777}
+.content{padding:25px;max-width:1500px;margin:auto}
+.page{display:none;animation:slide .35s ease}
+.page.active{display:block}
+.page-title{margin-bottom:20px}
+.page-title h2{font-size:23px}
+.page-title p{color:#777;font-size:13px;margin-top:6px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:22px}
+.card,.panel{background:white;border-radius:13px;padding:20px;box-shadow:0 4px 18px #22222208}
+.card p{font-size:13px;color:#777}
+.card h2{font-size:28px;margin-top:12px;color:#5145b5}
+.card .symbol{font-size:22px;float:right}
+.panel{margin-bottom:20px}
+.panel h3{font-size:17px;margin-bottom:15px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.field{flex:1;min-width:160px}
+.field label{display:block;font-size:12px;color:#666;margin-bottom:7px}
+.field button{width:100%}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+.toolbar input,.toolbar select{max-width:250px}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:680px}
+th,td{padding:12px 10px;text-align:left;border-bottom:1px solid #edf0f5;font-size:13px}
+th{background:#f5f4fc;color:#4c438e;font-size:12px}
+tbody tr:hover{background:#fafaff}
+.pill{padding:5px 9px;border-radius:20px;font-size:11px;font-weight:bold}
+.pill.present{background:#e0f7ed;color:#128553}
+.pill.absent{background:#ffe8e9;color:#c43c4b}
+.pill.pending{background:#fff2d9;color:#9a6900}
+.actions{display:flex;gap:5px;flex-wrap:wrap}
+.actions button{font-size:11px;padding:7px 9px}
+.muted{color:#777;font-size:13px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:#f6f5fc;padding:15px;border-radius:10px}
+.stat p{font-size:12px;color:#777}
+.stat h2{font-size:23px;margin-top:7px;color:#5145b5}
+.subject-list{display:flex;gap:8px;flex-wrap:wrap}
+.subject-chip{background:#eeecff;color:#4c438e;padding:8px 12px;border-radius:20px;font-size:12px}
+.empty{text-align:center;color:#888;padding:25px}
+.progress{height:9px;background:#ececf4;border-radius:10px;overflow:hidden;margin-top:8px}
+.progress span{height:100%;display:block;background:#5548bd;border-radius:10px}
+#toast{
+ position:fixed;right:20px;bottom:20px;background:#25234f;color:white;
+ padding:13px 18px;border-radius:9px;box-shadow:0 5px 20px #0003;
+ opacity:0;transform:translateY(15px);transition:.3s;z-index:20;
+}
+#toast.show{opacity:1;transform:translateY(0)}
+footer{text-align:center;color:#999;font-size:11px;padding:15px}
+
+@keyframes appear{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes slide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:900px){
+ .sidebar{width:190px}
+ .main{margin-left:190px}
+ .cards{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:650px){
+ .sidebar{position:relative;width:100%;height:auto;bottom:auto}
+ .brand{padding-bottom:12px}
+ .nav{display:flex;overflow-x:auto;margin-top:12px}
+ .nav button{white-space:nowrap}
+ .main{margin-left:0}
+ .content{padding:14px}
+ .topbar{padding:14px;flex-wrap:wrap}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .card{padding:14px}
+ .card h2{font-size:22px}
+ .stat-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="login-page" id="loginPage">
+ <div class="login-card">
+  <div class="logo">VU</div>
+  <h1>VIGNAN UNIVERSITY</h1>
+  <p>Student Attendance Management Portal</p>
+
+  <input type="email" id="email" placeholder="Admin Email">
+  <input type="password" id="password" placeholder="Password">
+  <button class="primary" onclick="login()">Login to Portal</button>
+  <p class="login-note">Authorized administrator access only</p>
+  <p id="loginError" style="color:#d33;margin-top:12px"></p>
+ </div>
+</div>
+
+<!-- PORTAL -->
+<div id="portal">
+
+ <aside class="sidebar">
+  <div class="brand">
+   <h2>VIGNAN PORTAL</h2>
+   <p>Student Attendance System</p>
+  </div>
+  <nav class="nav">
+   <button class="active" onclick="showPage('dashboard',this)">▦ Dashboard</button>
+   <button onclick="showPage('students',this)">♙ Students</button>
+   <button onclick="showPage('attendance',this)">✓ Mark Attendance</button>
+   <button onclick="showPage('search',this)">⌕ Student Search</button>
+   <button onclick="showPage('subjects',this)">▤ Subjects</button>
+   <button onclick="showPage('reports',this)">▥ Reports</button>
+  </nav>
+ </aside>
+
+ <main class="main">
+  <div class="topbar">
+   <div>
+    <h2 id="topTitle">Dashboard</h2>
+    <span>Vignan Student Attendance Portal</span>
+   </div>
+   <button class="red" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="content">
+
+   <!-- DASHBOARD -->
+   <section class="page active" id="dashboard">
+    <div class="page-title">
+     <h2>Dashboard Overview</h2>
+     <p>Overall student and attendance summary</p>
+    </div>
+
+    <div class="cards">
+     <div class="card"><span class="symbol">♙</span><p>Total Students</p><h2 id="dashStudents">0</h2></div>
+     <div class="card"><span class="symbol">▤</span><p>Total Subjects</p><h2 id="dashSubjects">0</h2></div>
+     <div class="card"><span class="symbol">✓</span><p>Present Records</p><h2 id="dashPresent">0</h2></div>
+     <div class="card"><span class="symbol">✕</span><p>Absent Records</p><h2 id="dashAbsent">0</h2></div>
+    </div>
+
+    <div class="panel">
+     <h3>Overall Attendance Percentage</h3>
+     <h2 id="dashPercentage" style="color:#5145b5">0%</h2>
+     <div class="progress"><span id="dashProgress" style="width:0%"></span></div>
+     <p class="muted" style="margin-top:10px">Calculated from all marked subject classes and all students.</p>
+    </div>
+
+    <div class="panel">
+     <h3>Today's Attendance Summary</h3>
+     <div class="stat-grid">
+      <div class="stat"><p>Present today</p><h2 id="todayPresent">0</h2></div>
+      <div class="stat"><p>Absent today</p><h2 id="todayAbsent">0</h2></div>
+      <div class="stat"><p>Classes marked today</p><h2 id="todaySessions">0</h2></div>
+     </div>
+    </div>
+   </section>
+
+   <!-- STUDENTS -->
+   <section class="page" id="students">
+    <div class="page-title">
+     <h2>Student Management</h2>
+     <p>Add and manage students in your class</p>
+    </div>
+
+    <div class="panel">
+     <h3>Add New Student</h3>
+     <div class="row">
+      <div class="field"><label>Student Name</label><input id="newName" placeholder="Enter student name"></div>
+      <div class="field"><label>Roll Number</label><input id="newRoll" placeholder="Enter roll number"></div>
+      <div class="field"><label>Branch / Section</label><input id="newClass" placeholder="Example: CSE-A"></div>
+      <div class="field"><button class="primary" onclick="addStudent()">+ Add Student</button></div>
+     </div>
+    </div>
+
+    <div class="panel">
+     <h3>Student List</h3>
+     <div class="toolbar">
+      <input id="studentFilter" placeholder="Search name or roll number" oninput="renderStudents()">
+     </div>
+     <div class="table-wrap">
+      <table>
+       <thead><tr><th>Roll Number</th><th>Student Name</th><th>Class</th><th>Present</th><th>Absent</th><th>Percentage</th><th>Action</th></tr></thead>
+       <tbody id="studentsTable"></tbody>
+      </table>
+     </div>
+    </div>
+   </section>
+
+   <!-- ATTENDANCE -->
+   <section class="page" id="attendance">
+    <div class="page-title">
+     <h2>Mark Subject-wise Attendance</h2>
+     <p>Select date and subject, then mark each student's attendance.</p>
+    </div>
+
+    <div class="panel">
+     <h3>Select Class Period</h3>
+     <div class="row">
+      <div class="field"><label>Attendance Date</label><input type="date" id="attendanceDate"></div>
+      <div class="field"><label>Subject</label><select id="attendanceSubject"></select></div>
+      <div class="field"><label>Period / Hour</label>
+       <select id="attendancePeriod">
+        <option>Period 1</option><option>Period 2</option>
+        <option>Period 3</option><option>Period 4</option>
+        <option>Period 5</option><option>Period 6</option>
+        <option>Period 7</option><option>Period 8</option>
+       </select>
+      </div>
+      <div class="field"><button class="primary" onclick="loadAttendance()">Load Students</button></div>
+     </div>
+    </div>
+
+    <div class="panel">
+     <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:15px">
+      <div><h3 id="attendanceHeading">Student Attendance</h3><p class="muted" id="attendanceSubheading"></p></div>
+      <button class="green" onclick="markAllPresent()">Mark All Present</button>
+     </div>
+     <div class="toolbar">
+      <input id="attendanceFilter" placeholder="Search student..." oninput="renderAttendanceTable()">
+     </div>
+     <div class="table-wrap">
+      <table>
+       <thead><tr><th>Roll Number</th><th>Student Name</th><th>Class</th><th>Current Status</th><th>Mark Attendance</th></tr></thead>
+       <tbody id="attendanceTable"></tbody>
+      </table>
+     </div>
+     <p class="muted" style="margin-top:12px">Attendance is saved immediately when you click Present or Absent. Each subject and period is a separate class.</p>
+    </div>
+   </section>
+
+   <!-- SEARCH STUDENT -->
+   <section class="page" id="search">
+    <div class="page-title">
+     <h2>Individual Student Attendance</h2>
+     <p>Search a student to view their complete attendance details.</p>
+    </div>
+
+    <div class="panel">
+     <h3>Search Student</h3>
+     <div class="row">
+      <div class="field"><label>Student Name or Roll Number</label><input id="profileSearch" placeholder="Type student name or roll number" oninput="searchStudent()"></div>
+      <div class="field"><button class="primary" onclick="searchStudent()">Search</button></div>
+     </div>
+     <div id="searchResults"></div>
+    </div>
+
+    <div id="studentProfile"></div>
+   </section>
+
+   <!-- SUBJECTS -->
+   <section class="page" id="subjects">
+    <div class="page-title">
+     <h2>Subject Management</h2>
+     <p>Add the subjects that are taught during the day.</p>
+    </div>
+
+    <div class="panel">
+     <h3>Add Subject</h3>
+     <div class="row">
+      <div class="field"><label>Subject Name</label><input id="newSubject" placeholder="Example: Computer Networks"></div>
+      <div class="field"><label>Subject Code (optional)</label><input id="newSubjectCode" placeholder="Example: CS302"></div>
+      <div class="field"><button class="primary" onclick="addSubject()">+ Add Subject</button></div>
+     </div>
+    </div>
+
+    <div class="panel">
+     <h3>Available Subjects</h3>
+     <div class="subject-list" id="subjectList"></div>
+    </div>
+   </section>
+
+   <!-- REPORTS -->
+   <section class="page" id="reports">
+    <div class="page-title">
+     <h2>Attendance Reports</h2>
+     <p>Download the complete attendance report as a CSV file.</p>
+    </div>
+    <div class="panel">
+     <h3>Report Filters</h3>
+     <div class="row">
+      <div class="field"><label>From Date</label><input type="date" id="reportFrom"></div>
+      <div class="field"><label>To Date</label><input type="date" id="reportTo"></div>
+      <div class="field"><label>Subject</label><select id="reportSubject"></select></div>
+      <div class="field"><button class="primary" onclick="downloadReport()">Download CSV Report</button></div>
+     </div>
+    </div>
+    <div class="panel">
+     <h3>Attendance Record Summary</h3>
+     <div id="reportSummary" class="muted"></div>
+    </div>
+   </section>
+
+  </div>
+  <footer>Vignan Student Attendance Management Portal</footer>
+ </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ADMIN LOGIN
+   Frontend demo only. Do not use hardcoded passwords in a public website.
+*/
+const ADMIN_EMAIL = "vignan@gmail.com";
+const ADMIN_PASSWORD = "jani@25";
+
+/* DATA */
+let students = JSON.parse(localStorage.getItem("vignan_students") || "[]");
+let subjects = JSON.parse(localStorage.getItem("vignan_subjects") || "null");
+let attendance = JSON.parse(localStorage.getItem("vignan_attendance") || "{}");
+
+if (!subjects) {
+ subjects = [
+  {id:"sub1",name:"Mathematics",code:"MA"},
+  {id:"sub2",name:"Computer Networks",code:"CN"},
+  {id:"sub3",name:"Machine Learning",code:"ML"},
+  {id:"sub4",name:"JavaScript",code:"JS"},
+  {id:"sub5",name:"Operating Systems",code:"OS"}
+ ];
+}
+
+function saveAll(){
+ localStorage.setItem("vignan_students",JSON.stringify(students));
+ localStorage.setItem("vignan_subjects",JSON.stringify(subjects));
+ localStorage.setItem("vignan_attendance",JSON.stringify(attendance));
+}
+
+function safe(value){
+ return String(value ?? "").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+function todayString(){
+ const d=new Date();
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+document.getElementById("attendanceDate").value=todayString();
+document.getElementById("reportFrom").value=todayString();
+document.getElementById("reportTo").value=todayString();
+
+/* LOGIN */
+function login(){
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+
+ if(email===ADMIN_EMAIL && password===ADMIN_PASSWORD){
+  sessionStorage.setItem("vignan_logged_in","yes");
+  openPortal();
+ }else{
+  document.getElementById("loginError").textContent="Invalid email or password.";
+ }
+}
+
+function logout(){
+ sessionStorage.removeItem("vignan_logged_in");
+ document.getElementById("portal").style.display="none";
+ document.getElementById("loginPage").style.display="flex";
+ document.getElementById("password").value="";
+}
+
+function openPortal(){
+ document.getElementById("loginPage").style.display="none";
+ document.getElementById("portal").style.display="block";
+ saveAll();
+ refreshAll();
+}
+
+if(sessionStorage.getItem("vignan_logged_in")==="yes") openPortal();
+
+/* NAVIGATION */
+function showPage(page,button){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(page).classList.add("active");
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+ if(button) button.classList.add("active");
+
+ const titles={
+  dashboard:"Dashboard",students:"Students",attendance:"Mark Attendance",
+  search:"Student Search",subjects:"Subjects",reports:"Reports"
+ };
+ document.getElementById("topTitle").textContent=titles[page];
+
+ if(page==="attendance") loadAttendance();
+ if(page==="search") searchStudent();
+ if(page==="reports") updateReportSummary();
+}
+
+/* TOAST */
+function toast(message){
+ const el=document.getElementById("toast");
+ el.textContent=message;
+ el.classList.add("show");
+ setTimeout(()=>el.classList.remove("show"),2300);
+}
+
+/* SUBJECTS */
+function addSubject(){
+ const name=document.getElementById("newSubject").value.trim();
+ const code=document.getElementById("newSubjectCode").value.trim();
+
+ if(!name){toast("Enter a subject name");return}
+ if(subjects.some(s=>s.name.toLowerCase()===name.toLowerCase())){
+  toast("Subject already exists");return;
+ }
+
+ subjects.push({id:"sub"+Date.now(),name,code});
+ document.getElementById("newSubject").value="";
+ document.getElementById("newSubjectCode").value="";
+ saveAll();
+ refreshAll();
+ toast("Subject added successfully");
+}
+
+function deleteSubject(id){
+ if(!confirm("Delete this subject? Its old attendance records will remain in reports."))return;
+ subjects=subjects.filter(s=>s.id!==id);
+ saveAll();
+ refreshAll();
+}
+
+function renderSubjects(){
+ document.getElementById("subjectList").innerHTML=subjects.length
+ ? subjects.map(s=>`
+  <div class="subject-chip">
+   ${safe(s.name)} ${s.code?"("+safe(s.code)+")":""}
+   <button class="small red" onclick="deleteSubject('${s.id}')">×</button>
+  </div>`).join("")
+ : '<p class="empty">No subjects added.</p>';
+
+ const options=subjects.map(s=>`<option value="${safe(s.id)}">${safe(s.name)}</option>`).join("");
+ document.getElementById("attendanceSubject").innerHTML=options || '<option value="">Add subjects first</option>';
+ document.getElementById("reportSubject").innerHTML='<option value="all">All Subjects</option>'+options;
+}
+
+/* STUDENTS */
+function addStudent(){
+ const name=document.getElementById("newName").value.trim();
+ const roll=document.getElementById("newRoll").value.trim();
+ const cls=document.getElementById("newClass").value.trim();
+
+ if(!name||!roll||!cls){toast("Fill all student details");return}
+ if(students.some(s=>s.roll.toLowerCase()===roll.toLowerCase())){
+  toast("This roll number already exists");return;
+ }
+
+ students.push({id:"stu"+Date.now(),name,roll,cls});
+ ["newName","newRoll","newClass"].forEach(id=>document.getElementById(id).value="");
+ saveAll();
+ refreshAll();
+ toast("Student added successfully");
+}
+
+function studentStats(studentId,from="",to="",subjectId="all"){
+ let present=0,absent=0;
+ const bySubject={};
+ const absentDetails=[];
+
+ Object.entries(attendance).forEach(([key,records])=>{
+  const parts=key.split("|");
+  const [date,subId,period]=parts;
+  if(from && date<from)return;
+  if(to && date>to)return;
+  if(subjectId!=="all" && subId!==subjectId)return;
+
+  const status=records[studentId];
+  if(!status)return;
+
+  if(!bySubject[subId])bySubject[subId]={present:0,absent:0};
+
+  if(status==="Present"){
+   present++;
+   bySubject[subId].present++;
+  }else{
+   absent++;
+   bySubject[subId].absent++;
+   const subject=subjects.find(s=>s.id===subId);
+   absentDetails.push({
+    date,subject:subject?subject.name:"Deleted subject",period
+   });
+  }
+ });
+
+ const total=present+absent;
+ return {
+  present,absent,total,
+  percentage:total?((present/total)*100).toFixed(1):"0.0",
+  bySubject,absentDetails
+ };
+}
+
+function renderStudents(){
+ const q=(document.getElementById("studentFilter")?.value||"").toLowerCase();
+ const list=students.filter(s=>
+  s.name.toLowerCase().includes(q)||s.roll.toLowerCase().includes(q)
+ );
+
+ document.getElementById("studentsTable").innerHTML=list.length
+ ? list.map(s=>{
+  const st=studentStats(s.id);
+  return `<tr>
+   <td>${safe(s.roll)}</td><td>${safe(s.name)}</td><td>${safe(s.cls)}</td>
+   <td>${st.present}</td><td>${st.absent}</td>
+   <td><b>${st.percentage}%</b></td>
+   <td><button class="small primary" onclick="openStudentProfile('${s.id}')">View</button>
+   <button class="small red" onclick="deleteStudent('${s.id}')">Delete</button></td>
+  </tr>`;
+ }).join("")
+ : '<tr><td colspan="7" class="empty">No students found.</td></tr>';
+}
+
+function deleteStudent(id){
+ if(!confirm("Delete this student and their attendance records?"))return;
+ students=students.filter(s=>s.id!==id);
+ Object.keys(attendance).forEach(key=>delete attendance[key][id]);
+ saveAll();
+ refreshAll();
+ toast("Student deleted");
+}
+
+/* ATTENDANCE */
+function currentSessionKey(){
+ return [
+  document.getElementById("attendanceDate").value,
+  document.getElementById("attendanceSubject").value,
+  document.getElementById("attendancePeriod").value
+ ].join("|");
+}
+
+function loadAttendance(){
+ const date=document.getElementById("attendanceDate").value;
+ const subjectId=document.getElementById("attendanceSubject").value;
+ const period=document.getElementById("attendancePeriod").value;
+ const subject=subjects.find(s=>s.id===subjectId);
+
+ document.getElementById("attendanceHeading").textContent=
+  subject?subject.name+" - "+period:"Student Attendance";
+ document.getElementById("attendanceSubheading").textContent=date;
+
+ renderAttendanceTable();
+}
+
+function renderAttendanceTable(){
+ const table=document.getElementById("attendanceTable");
+ if(!table)return;
+
+ const q=(document.getElementById("attendanceFilter").value||"").toLowerCase();
+ const key=currentSessionKey();
+ const records=attendance[key]||{};
+
+ const list=students.filter(s=>
+  s.name.toLowerCase().includes(q)||s.roll.toLowerCase().includes(q)
+ );
+
+ table.innerHTML=list.length?list.map(s=>{
+  const status=records[s.id]||"Not Marked";
+  const cls=status==="Present"?"present":status==="Absent"?"absent":"pending";
+  return `<tr>
+   <td>${safe(s.roll)}</td>
+   <td>${safe(s.name)}</td>
+   <td>${safe(s.cls)}</td>
+   <td><span class="pill ${cls}">${status}</span></td>
+   <td class="actions">
+    <button class="green" onclick="markOne('${s.id}','Present')">Present</button>
+    <button class="red" onclick="markOne('${s.id}','Absent')">Absent</button>
+   </td>
+  </tr>`;
+ }).join(""):'<tr><td colspan="5" class="empty">No students added yet.</td></tr>';
+}
+
+function markOne(studentId,status){
+ const date=document.getElementById("attendanceDate").value;
+ const subjectId=document.getElementById("attendanceSubject").value;
+ if(!date||!subjectId){toast("Select date and subject first");return}
+
+ const key=currentSessionKey();
+ if(!attendance[key])attendance[key]={};
+ attendance[key][studentId]=status;
+
+ saveAll();
+ renderAttendanceTable();
+ updateDashboard();
+ toast("Attendance saved: "+status);
+}
+
+function markAllPresent(){
+ if(!students.length){toast("Add students first");return}
+ const key=currentSessionKey();
+ if(!document.getElementById("attendanceDate").value ||
+    !document.getElementById("attendanceSubject").value){
+  toast("Select date and subject first");return
+ }
+ if(!attendance[key])attendance[key]={};
+ students.forEach(s=>attendance[key][s.id]="Present");
+ saveAll();
+ renderAttendanceTable();
+ updateDashboard();
+ toast("All students marked Present");
+}
+
+/* STUDENT PROFILE SEARCH */
+function searchStudent(){
+ const q=(document.getElementById("profileSearch").value||"").trim().toLowerCase();
+ const results=document.getElementById("searchResults");
+ const profile=document.getElementById("studentProfile");
+
+ if(!q){
+  results.innerHTML='<p class="muted" style="margin-top:15px">Enter a student name or roll number.</p>';
+  profile.innerHTML="";
+  return;
+ }
+
+ const matches=students.filter(s=>
+  s.name.toLowerCase().includes(q)||s.roll.toLowerCase().includes(q)
+ );
+
+ results.innerHTML=matches.length
+ ? matches.map(s=>`
+  <button class="gray" style="margin:12px 8px 0 0" onclick="openStudentProfile('${s.id}')">
+   ${safe(s.name)} - ${safe(s.roll)}
+  </button>`).join("")
+ : '<p class="muted" style="margin-top:15px">No matching student found.</p>';
+
+ if(matches.length===1)openStudentProfile(matches[0].id);
+ else profile.innerHTML="";
+}
+
+function openStudentProfile(id){
+ const s=students.find(x=>x.id===id);
+ if(!s)return;
+
+ const st=studentStats(id);
+ const subjectRows=Object.entries(st.bySubject).map(([subId,v])=>{
+  const sub=subjects.find(x=>x.id===subId);
+  const total=v.present+v.absent;
+  const pct=total?(v.present/total*100).toFixed(1):"0.0";
+  return `<tr><td>${safe(sub?sub.name:"Deleted subject")}</td>
+   <td>${v.present}</td><td>${v.absent}</td><td>${total}</td><td>${pct}%</td></tr>`;
+ }).join("");
+
+ const absentRows=st.absentDetails.sort((a,b)=>b.date.localeCompare(a.date)).map(a=>
+  `<tr><td>${safe(a.date)}</td><td>${safe(a.subject)}</td><td>${safe(a.period)}</td><td><span class="pill absent">Absent</span></td></tr>`
+ ).join("");
+
+ document.getElementById("studentProfile").innerHTML=`
+  <div class="panel" style="margin-top:20px">
+   <h3>Student Attendance Profile</h3>
+   <h2 style="color:#5145b5;margin-bottom:6px">${safe(s.name)}</h2>
+   <p class="muted">Roll Number: ${safe(s.roll)} | Class: ${safe(s.cls)}</p>
+   <div class="cards" style="margin-top:20px">
+    <div class="card"><p>Total Classes</p><h2>${st.total}</h2></div>
+    <div class="card"><p>Present Classes</p><h2 style="color:#159c69">${st.present}</h2></div>
+    <div class="card"><p>Absent Classes</p><h2 style="color:#df4e5c">${st.absent}</h2></div>
+    <div class="card"><p>Attendance Percentage</p><h2>${st.percentage}%</h2></div>
+   </div>
+   <h3 style="margin:20px 0 12px">Overall Attendance</h3>
+   <div class="progress"><span style="width:${st.percentage}%"></span></div>
+   <p class="muted" style="margin-top:8px">${st.percentage}% attendance</p>
+  </div>
+
+  <div class="panel">
+   <h3>Subject-wise Attendance</h3>
+   <div class="table-wrap">
+    <table><thead><tr><th>Subject</th><th>Present</th><th>Absent</th><th>Total Classes</th><th>Percentage</th></tr></thead>
+    <tbody>${subjectRows||'<tr><td colspan="5" class="empty">No attendance records yet.</td></tr>'}</tbody></table>
+   </div>
+  </div>
+
+  <div class="panel">
+   <h3>Absent Class Details</h3>
+   <div class="table-wrap">
+    <table><thead><tr><th>Date</th><th>Subject</th><th>Period</th><th>Status</th></tr></thead>
+    <tbody>${absentRows||'<tr><td colspan="4" class="empty">No absent records. Great!</td></tr>'}</tbody></table>
+   </div>
+  </div>
+ `;
+}
+
+/* DASHBOARD SUMMARY */
+function updateDashboard(){
+ let totalPresent=0,totalAbsent=0,todayPresent=0,todayAbsent=0;
+ const today=todayString();
+ const todayKeys=new Set();
+
+ Object.entries(attendance).forEach(([key,records])=>{
+  const date=key.split("|")[0];
+  Object.values(records).forEach(status=>{
+   if(status==="Present"){
+    totalPresent++;
+    if(date===today)todayPresent++;
+   }else if(status==="Absent"){
+    totalAbsent++;
+    if(date===today)todayAbsent++;
+   }
+  });
+  if(date===today && Object.keys(records).length)todayKeys.add(key);
+ });
+
+ const total=totalPresent+totalAbsent;
+ const pct=total?(totalPresent/total*100).toFixed(1):"0.0";
+
+ document.getElementById("dashStudents").textContent=students.length;
+ document.getElementById("dashSubjects").textContent=subjects.length;
+ document.getElementById("dashPresent").textContent=totalPresent;
+ document.getElementById("dashAbsent").textContent=totalAbsent;
+ document.getElementById("dashPercentage").textContent=pct+"%";
+ document.getElementById("dashProgress").style.width=pct+"%";
+ document.getElementById("todayPresent").textContent=todayPresent;
+ document.getElementById("todayAbsent").textContent=todayAbsent;
+ document.getElementById("todaySessions").textContent=todayKeys.size;
+}
+
+/* CSV REPORT */
+function downloadReport(){
+ const from=document.getElementById("reportFrom").value;
+ const to=document.getElementById("reportTo").value;
+ const sub=document.getElementById("reportSubject").value;
+
+ if(from&&to&&from>to){toast("From date cannot be after To date");return}
+
+ let rows=[["Date","Period","Subject","Roll Number","Student Name","Class","Status"]];
+ Object.entries(attendance).forEach(([key,records])=>{
+  const [date,subId,period]=key.split("|");
+  if(from&&date<from)return;
+  if(to&&date>to)return;
+  if(sub!=="all"&&subId!==sub)return;
+
+  Object.entries(records).forEach(([studentId,status])=>{
+   const s=students.find(x=>x.id===studentId);
+   if(!s)return;
+   const subject=subjects.find(x=>x.id===subId);
+   rows.push([date,period,subject?subject.name:"Deleted subject",s.roll,s.name,s.cls,status]);
+  });
+ });
+
+ const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+ const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="Vignan_Attendance_Report.csv";a.click();
+ URL.revokeObjectURL(url);
+ toast("Attendance report downloaded");
+}
+
+function updateReportSummary(){
+ let count=0;
+ Object.values(attendance).forEach(records=>count+=Object.keys(records).length);
+ document.getElementById("reportSummary").textContent=
+  "Students: "+students.length+
+  " | Subjects: "+subjects.length+
+  " | Total marked attendance records: "+count;
+}
+
+/* REFRESH */
+function refreshAll(){
+ renderSubjects();
+ renderStudents();
+ updateDashboard();
+ updateReportSummary();
+ renderAttendanceTable();
+}
+</script>
+</body>
+</html>
